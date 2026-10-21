@@ -13,9 +13,13 @@ Projektgruppe: Aimen Labidi, Elias · Version 2.0
 | **Technologien** | Python 3.12+, nur Standardbibliothek · Konsolenapplikation · funktionale Elemente: `filter`, `map`, `functools.reduce`, Lambdas, `itertools.groupby`, Comprehensions |
 | **Output** | Formatierter Text auf der Konsole, siehe Kapitel 3 |
 
+Beide Programmversionen lesen **dieselbe Datei** `data/ist_daten.csv` mit derselben Funktion `lade_daten` (V1 mit Schleifen, V2 mit `groupby`) und arbeiten auf derselben 3D-Struktur.
+
 ## 2. Gewählte Programmiersprache: Python
 
 Python ist eine imperative, objektorientierte Sprache. Sie bietet aber viele funktionale Sprachelemente, mit denen man ohne Schleifen und ohne Veränderung von Daten programmieren kann.
+
+**Warum Python?** Wir kennen Python aus anderen Modulen, das Einlesen von CSV-Dateien und das Rechnen mit Datum und Zeit sind in der Standardbibliothek enthalten (`csv`, `datetime`), und es braucht keine Kompilierung. Weil Python beide Stile unterstützt, lassen sich V1 (imperativ) und V2 (funktional) in derselben Sprache direkt vergleichen.
 
 **Funktionen als Werte (First-Class-Functions).** Funktionen sind Objekte. Man kann sie in Variablen speichern und anderen Funktionen übergeben. In V2 wird `gefahren` an `filter` und `mit_verspaetung` an `map` übergeben:
 ```python
@@ -24,12 +28,12 @@ halte = list(map(mit_verspaetung, filter(gefahren, alle_halte(tage))))
 
 **Funktionen höherer Ordnung: `filter`, `map`, `reduce`.** `filter(f, daten)` behält die Elemente, für die `f` `True` liefert. `map(f, daten)` wendet `f` auf jedes Element an. `functools.reduce(f, daten, start)` fasst alle Elemente zu einem Wert zusammen. `filter` und `map` liefern Iteratoren, die erst bei Bedarf rechnen (Lazy Evaluation).
 ```python
-reduce(lambda n, halt: n + halt["ausfall"], halte, 0)   # Anzahl Ausfälle
+reduce(lambda anzahl, halt: anzahl + halt["ausfall"], halte, 0)   # Anzahl Ausfälle
 ```
 
 **Lambda-Ausdrücke.** Anonyme Funktionen für kurze Ausdrücke, z. B. als Sortierschlüssel. Ein Lambda darf nur **einen Ausdruck** enthalten, keine Anweisungen. Für mehr Logik schreibt man eine normale Funktion mit `def`.
 ```python
-sorted(statistiken, key=lambda s: (-s[3], s[2], s[0]))
+sorted(statistiken, key=lambda stat: (-stat[3], stat[2], stat[0]))
 ```
 
 **Comprehensions und Generatoren.** `[f(x) for x in daten if bedingung]` verbindet Map und Filter in einer Zeile. Mit runden Klammern entsteht ein Generator, der die Werte erst bei Bedarf erzeugt.
@@ -90,7 +94,28 @@ IC    58.5 min  IC6    Olten        06.11.2025
 
 ## 4. Fazit
 
-**Nutzen für unser Projekt und Unterschied zur imperativen Lösung.** In V1 braucht jede Auswertung verschachtelte Schleifen, Hilfsvariablen und Zähler, die laufend verändert werden (z. B. `anzahl += 1`, `summen[bahnhof][0] += 1`). In V2 beschreibt der Code, *was* berechnet wird: `filter(gefahren, …)` → `map(mit_verspaetung, …)` → `reduce(…)`. Jede Funktion ist klein, pur und einzeln testbar, und weil keine Daten verändert werden, kann eine Funktion keine andere durch Seiteneffekte stören. Der Nachteil: Ein `reduce` mit Lambda (z. B. in `statistik_pro_bahnhof`) ist für Einsteiger schwerer zu lesen als eine Schleife.
+**Vergleich am Beispiel von Funktion 4 (Ausfälle pro Tag):**
+
+V1 (imperativ):
+```python
+resultat = []
+for tag, bahnhoefe in tage:
+    anzahl = 0
+    for _, halte in bahnhoefe:
+        for halt in halte:
+            if halt["ausfall"]:
+                anzahl += 1
+    resultat.append((tag, anzahl))
+```
+
+V2 (funktional):
+```python
+[(tag, reduce(lambda anzahl, halt: anzahl + halt["ausfall"],
+              (halt for _, halte in bahnhoefe for halt in halte), 0))
+ for tag, bahnhoefe in tage]
+```
+
+**Nutzen für unser Projekt und Unterschied zur imperativen Lösung.** In V1 braucht jede Auswertung verschachtelte Schleifen, Hilfsvariablen und Zähler, die laufend verändert werden (z. B. `anzahl += 1`, `werte[0] += 1`). In V2 beschreibt der Code, was berechnet wird: `filter(gefahren, …)` → `map(mit_verspaetung, …)` → `reduce(…)`. Jede Funktion ist klein, pur und einzeln testbar, und weil keine Daten verändert werden, kann eine Funktion keine andere durch Seiteneffekte stören. Der Nachteil: Ein `reduce` mit Lambda (z. B. in `statistik_pro_bahnhof`) ist für Einsteiger schwerer zu lesen als eine Schleife.
 
 **Erneuter Einsatz.** Für Datenauswertungen (Filtern, Umrechnen, Gruppieren, Zusammenfassen) würden wir wieder funktional arbeiten, vor allem Comprehensions, `map`/`filter` und `sorted` mit `key`. Für sehr komplexe Akkumulationen würden wir lesbare Hilfsfunktionen statt verschachtelter Lambdas schreiben.
 

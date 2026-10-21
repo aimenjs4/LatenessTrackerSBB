@@ -110,11 +110,12 @@ def statistik_pro_bahnhof(halte):
         alphabetisch nach Bahnhof sortiert.
     """
     summen = reduce(
-        lambda acc, h: {**acc, h["bahnhof"]: tuple(map(sum, zip(
-            acc.get(h["bahnhof"], (0, 0.0, 0)), (1, h["verspaetung"], int(h["puenktlich"])))))},
+        lambda bisher, halt: {**bisher, halt["bahnhof"]: tuple(map(sum, zip(
+            bisher.get(halt["bahnhof"], (0, 0.0, 0)),
+            (1, halt["verspaetung"], int(halt["puenktlich"])))))},
         halte, {})
-    return [(bahnhof, n, total / n, puenktlich / n * 100)
-            for bahnhof, (n, total, puenktlich) in sorted(summen.items())]
+    return [(bahnhof, anzahl, total / anzahl, puenktlich / anzahl * 100)
+            for bahnhof, (anzahl, total, puenktlich) in sorted(summen.items())]
 
 
 def ausfaelle_pro_tag(tage):
@@ -126,8 +127,8 @@ def ausfaelle_pro_tag(tage):
     Returns:
         Liste von (tag, anzahl_ausfaelle) in Reihenfolge der Daten.
     """
-    return [(tag, reduce(lambda n, halt: n + halt["ausfall"],
-                         (h for _, halte in bahnhoefe for h in halte), 0))
+    return [(tag, reduce(lambda anzahl, halt: anzahl + halt["ausfall"],
+                         (halt for _, halte in bahnhoefe for halt in halte), 0))
             for tag, bahnhoefe in tage]
 
 
@@ -141,11 +142,13 @@ def maxima_pro_kategorie(halte):
         Liste von (kategorie, max_verspaetung_min, linie, bahnhof, tag)
         in der Reihenfolge von KATEGORIEN.
     """
-    maxima = map(lambda k: reduce(
-        lambda a, b: b if a is None or b["verspaetung"] > a["verspaetung"] else a,
-        filter(lambda h: h["kategorie"] == k, halte), None), KATEGORIEN)
-    return [(m["kategorie"], m["verspaetung"], m["linie"], m["bahnhof"], m["tag"])
-            for m in maxima if m is not None]
+    maxima = map(lambda kategorie: reduce(
+        lambda bisher, halt: halt if bisher is None
+        or halt["verspaetung"] > bisher["verspaetung"] else bisher,
+        filter(lambda halt: halt["kategorie"] == kategorie, halte), None), KATEGORIEN)
+    return [(maximum["kategorie"], maximum["verspaetung"], maximum["linie"],
+             maximum["bahnhof"], maximum["tag"])
+            for maximum in maxima if maximum is not None]
 
 
 def ranking(statistiken):
@@ -157,7 +160,7 @@ def ranking(statistiken):
     Returns:
         Neue Liste: Quote absteigend, dann Ø Verspätung aufsteigend, dann Name.
     """
-    return sorted(statistiken, key=lambda s: (-s[3], s[2], s[0]))
+    return sorted(statistiken, key=lambda stat: (-stat[3], stat[2], stat[0]))
 
 
 def bericht(tage):
@@ -179,16 +182,18 @@ def bericht(tage):
         "=" * 60,
         "\n1) Statistik pro Bahnhof",
         f"{'Bahnhof':<12}{'Halte':>8}{'Ø Verspätung':>15}{'Pünktlich':>12}",
-        *(f"{b:<12}{n:>8}{d:>11.1f} min{q:>11.1f}%" for b, n, d, q in statistiken),
+        *(f"{bahnhof:<12}{anzahl:>8}{durchschnitt:>11.1f} min{quote:>11.1f}%"
+          for bahnhof, anzahl, durchschnitt, quote in statistiken),
         "\n2) Zugausfälle pro Tag",
-        *(f"{tag:<12}{n:>5}" for tag, n in ausfaelle),
-        f"{'Total':<12}{reduce(lambda s, a: s + a[1], ausfaelle, 0):>5}",
+        *(f"{tag:<12}{anzahl:>5}" for tag, anzahl in ausfaelle),
+        f"{'Total':<12}{reduce(lambda total, eintrag: total + eintrag[1], ausfaelle, 0):>5}",
         "\n3) Grösste Verspätung pro Kategorie",
-        *(f"{k:<4}{m:>6.1f} min  {l:<6} {b:<12} {t}"
-          for k, m, l, b, t in maxima_pro_kategorie(halte)),
+        *(f"{kategorie:<4}{maximum:>6.1f} min  {linie:<6} {bahnhof:<12} {tag}"
+          for kategorie, maximum, linie, bahnhof, tag in maxima_pro_kategorie(halte)),
         "\n4) Ranking Pünktlichkeit",
-        *(f"{i}. {b:<12}{q:>6.1f}%  (Ø {d:.1f} min)"
-          for i, (b, _, d, q) in enumerate(ranking(statistiken), start=1)),
+        *(f"{platz}. {bahnhof:<12}{quote:>6.1f}%  (Ø {durchschnitt:.1f} min)"
+          for platz, (bahnhof, _, durchschnitt, quote)
+          in enumerate(ranking(statistiken), start=1)),
     ])
 
 
