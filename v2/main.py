@@ -110,7 +110,7 @@ def statistik_pro_bahnhof(halte):
 
     Returns:
         Liste von (bahnhof, anzahl, durchschnitt_min, quote_prozent),
-        alphabetisch nach Bahnhof sortiert.
+        in der Reihenfolge, in der die Bahnhöfe in den Daten vorkommen.
     """
     summen = reduce(
         lambda bisher, halt: {**bisher, halt["bahnhof"]: tuple(map(sum, zip(
@@ -118,7 +118,7 @@ def statistik_pro_bahnhof(halte):
             (1, halt["verspaetung"], int(halt["puenktlich"])))))},
         halte, {})
     return [(bahnhof, anzahl, total / anzahl, puenktlich / anzahl * 100)
-            for bahnhof, (anzahl, total, puenktlich) in sorted(summen.items())]
+            for bahnhof, (anzahl, total, puenktlich) in summen.items()]
 
 
 def ausfaelle_pro_tag(tage):

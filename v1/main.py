@@ -116,7 +116,7 @@ def statistik_pro_bahnhof(halte):
 
     Returns:
         Liste von (bahnhof, anzahl, durchschnitt_min, quote_prozent),
-        alphabetisch nach Bahnhof sortiert.
+        in der Reihenfolge, in der die Bahnhöfe in den Daten vorkommen.
     """
     summen = {}
     for halt in halte:
@@ -128,7 +128,7 @@ def statistik_pro_bahnhof(halte):
         if halt["puenktlich"]:
             werte[2] += 1
     statistiken = []
-    for bahnhof in sorted(summen):
+    for bahnhof in summen:
         anzahl, total, puenktlich = summen[bahnhof]
         statistiken.append((bahnhof, anzahl, total / anzahl, puenktlich / anzahl * 100))
     return statistiken

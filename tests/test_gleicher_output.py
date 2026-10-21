@@ -13,7 +13,7 @@ from pathlib import Path
 ROOT = Path(__file__).parent.parent
 
 
-def run(version):
+def ausfuehren(version):
     """Programm einer Version ausführen.
 
     Args:
@@ -62,8 +62,8 @@ class GleicherOutput(unittest.TestCase):
         """V1 und V2 geben exakt den erwarteten, nicht leeren Text aus."""
         erwartet = (ROOT / "tests" / "expected_output.txt").read_text(encoding="utf-8")
         self.assertTrue(erwartet.strip())
-        self.assertEqual(run("v1"), erwartet)
-        self.assertEqual(run("v2"), erwartet)
+        self.assertEqual(ausfuehren("v1"), erwartet)
+        self.assertEqual(ausfuehren("v2"), erwartet)
 
 
 class Funktionen(unittest.TestCase):
