@@ -4,7 +4,7 @@ Quelle: SBB Ist-Daten von opentransportdata.swiss (eine CSV pro Betriebstag,
 Trennzeichen ";"). Die Rohdateien gehören nach data/raw/ und werden nicht
 committet.
 
-Autor:   Aimen Labidi, Elias
+Autor:   Aimen Labidi, Elias Felder
 Version: 1.0
 """
 import csv

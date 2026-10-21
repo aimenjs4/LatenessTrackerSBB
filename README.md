@@ -1,6 +1,6 @@
 # SBB-Verspätungsanalyse (M323)
 
-Python 3.12+, nur Standardbibliothek. Dokumentation: [docs/dokumentation.md](docs/dokumentation.md)
+Python 3.12, nur Standardbibliothek. Dokumentation: [docs/dokumentation.md](docs/dokumentation.md)
 
 ```
 python v1/main.py                   # Version 1.0 (imperativ)

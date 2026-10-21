@@ -4,7 +4,7 @@ Gleiche Auswertung wie Version 1.0, aber mit funktionalen Sprachmitteln:
 filter, map, functools.reduce, Lambdas, itertools.groupby und ohne Mutation
 von Daten (neue Dicts/Tupel statt Veränderung bestehender Werte).
 
-Autor:   Aimen Labidi, Elias
+Autor:   Aimen Labidi, Elias Felder
 Version: 2.0
 """
 import csv
@@ -16,7 +16,10 @@ from pathlib import Path
 
 DATEI = Path(__file__).parent.parent / "data" / "ist_daten.csv"
 PUENKTLICH_GRENZE_MIN = 3
-KATEGORIEN = ("S", "RE", "IR", "IC")
+KATEGORIEN = ("IC", "IR", "RE", "S")
+WOCHENTAGE = ("Mo", "Di", "Mi", "Do", "Fr", "Sa", "So")
+AUSFAELLE_PRO_RAUTE = 2
+BREITE = 61
 
 
 def zu_halt(zeile):
@@ -142,13 +145,14 @@ def maxima_pro_kategorie(halte):
         Liste von (kategorie, max_verspaetung_min, linie, bahnhof, tag)
         in der Reihenfolge von KATEGORIEN.
     """
-    maxima = map(lambda kategorie: reduce(
+    maxima = {kategorie: reduce(
         lambda bisher, halt: halt if bisher is None
         or halt["verspaetung"] > bisher["verspaetung"] else bisher,
-        filter(lambda halt: halt["kategorie"] == kategorie, halte), None), KATEGORIEN)
-    return [(maximum["kategorie"], maximum["verspaetung"], maximum["linie"],
+        filter(lambda halt: halt["kategorie"] == kategorie, halte), None)
+        for kategorie in KATEGORIEN}
+    return [(kategorie, maximum["verspaetung"], maximum["linie"],
              maximum["bahnhof"], maximum["tag"])
-            for maximum in maxima if maximum is not None]
+            for kategorie, maximum in maxima.items() if maximum is not None]
 
 
 def ranking(statistiken):
@@ -163,8 +167,32 @@ def ranking(statistiken):
     return sorted(statistiken, key=lambda stat: (-stat[3], stat[2], stat[0]))
 
 
+def tausender(zahl):
+    """Ganze Zahl mit Schweizer Tausendertrennzeichen formatieren.
+
+    Args:
+        zahl: ganze Zahl, z. B. 11666.
+
+    Returns:
+        Text wie "11'666".
+    """
+    return f"{zahl:,}".replace(",", "'")
+
+
+def wochentag(tag):
+    """Wochentag-Kürzel zu einem Datum bestimmen.
+
+    Args:
+        tag: Datum als Text "TT.MM.JJJJ".
+
+    Returns:
+        Kürzel wie "Mo".
+    """
+    return WOCHENTAGE[datetime.strptime(tag, "%d.%m.%Y").weekday()]
+
+
 def bericht(tage):
-    """Funktionen 1-6 verketten und den Konsolen-Output als Text erzeugen.
+    """Funktionen 1-6 verketten und den Konsolen-Output gemäss Mockup erzeugen.
 
     Args:
         tage: Struktur aus lade_daten.
@@ -173,27 +201,27 @@ def bericht(tage):
         Fertig formatierter Bericht als String.
     """
     halte = list(map(mit_verspaetung, filter(gefahren, alle_halte(tage))))
-    statistiken = statistik_pro_bahnhof(halte)
-    ausfaelle = ausfaelle_pro_tag(tage)
     return "\n".join([
-        "=" * 60,
-        f"SBB-Verspätungsanalyse {tage[0][0]} – {tage[-1][0]}",
-        f"Pünktlich = weniger als {PUENKTLICH_GRENZE_MIN} Minuten Verspätung",
-        "=" * 60,
-        "\n1) Statistik pro Bahnhof",
-        f"{'Bahnhof':<12}{'Halte':>8}{'Ø Verspätung':>15}{'Pünktlich':>12}",
-        *(f"{bahnhof:<12}{anzahl:>8}{durchschnitt:>11.1f} min{quote:>11.1f}%"
-          for bahnhof, anzahl, durchschnitt, quote in statistiken),
-        "\n2) Zugausfälle pro Tag",
-        *(f"{tag:<12}{anzahl:>5}" for tag, anzahl in ausfaelle),
-        f"{'Total':<12}{reduce(lambda total, eintrag: total + eintrag[1], ausfaelle, 0):>5}",
-        "\n3) Grösste Verspätung pro Kategorie",
-        *(f"{kategorie:<4}{maximum:>6.1f} min  {linie:<6} {bahnhof:<12} {tag}"
+        "=" * BREITE,
+        f"   SBB Verspätungsanalyse  |  {tage[0][0]} - {tage[-1][0]}",
+        "=" * BREITE,
+        "\nPünktlichkeit pro Bahnhof (Ranking)",
+        "-" * BREITE,
+        f"{'Rang':<6}{'Bahnhof':<14}{'Halte':>7}{'Ø Verspätung':>15}{'Pünktlich':>11}",
+        *(f"{rang:>3}   {bahnhof:<14}{tausender(anzahl):>7}"
+          f"{durchschnitt:>11.1f} min{quote:>9.1f} %"
+          for rang, (bahnhof, anzahl, durchschnitt, quote)
+          in enumerate(ranking(statistik_pro_bahnhof(halte)), start=1)),
+        f"(pünktlich = weniger als {PUENKTLICH_GRENZE_MIN} Minuten Verspätung)",
+        f"\nZugausfälle pro Tag (# = {AUSFAELLE_PRO_RAUTE} Ausfälle)",
+        "-" * BREITE,
+        *(f"{wochentag(tag)} {tag[:6]}  {anzahl:>3}   {'#' * (anzahl // AUSFAELLE_PRO_RAUTE)}"
+          for tag, anzahl in ausfaelle_pro_tag(tage)),
+        "\nMaximale Verspätung pro Zugkategorie",
+        "-" * BREITE,
+        *(f"{kategorie:<4}{maximum:>3.0f} min   ({linie}, {bahnhof}, {tag[:6]})"
           for kategorie, maximum, linie, bahnhof, tag in maxima_pro_kategorie(halte)),
-        "\n4) Ranking Pünktlichkeit",
-        *(f"{platz}. {bahnhof:<12}{quote:>6.1f}%  (Ø {durchschnitt:.1f} min)"
-          for platz, (bahnhof, _, durchschnitt, quote)
-          in enumerate(ranking(statistiken), start=1)),
+        "=" * BREITE,
     ])
 
 

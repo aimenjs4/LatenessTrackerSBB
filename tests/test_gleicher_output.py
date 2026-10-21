@@ -1,6 +1,6 @@
 """Tests: V1 und V2 liefern denselben, korrekten Output.
 
-Autor:   Aimen Labidi, Elias
+Autor:   Aimen Labidi, Elias Felder
 Version: 2.0
 """
 import importlib.util

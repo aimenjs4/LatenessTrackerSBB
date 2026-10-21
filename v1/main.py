@@ -4,7 +4,7 @@ Wertet die Ist-Daten von 5 Bahnhöfen über 7 Tage aus (Verspätungen,
 Pünktlichkeit, Ausfälle) und gibt das Resultat formatiert auf die Konsole aus.
 Alle Auswertungen sind bewusst mit Schleifen und veränderbaren Variablen gelöst.
 
-Autor:   Aimen Labidi, Elias
+Autor:   Aimen Labidi, Elias Felder
 Version: 1.0
 """
 import csv
@@ -13,7 +13,10 @@ from pathlib import Path
 
 DATEI = Path(__file__).parent.parent / "data" / "ist_daten.csv"
 PUENKTLICH_GRENZE_MIN = 3
-KATEGORIEN = ["S", "RE", "IR", "IC"]
+KATEGORIEN = ["IC", "IR", "RE", "S"]
+WOCHENTAGE = ["Mo", "Di", "Mi", "Do", "Fr", "Sa", "So"]
+AUSFAELLE_PRO_RAUTE = 2
+BREITE = 61
 
 
 def lade_daten(pfad):
@@ -209,38 +212,59 @@ def ranking(statistiken):
     return sortiert
 
 
+def tausender(zahl):
+    """Ganze Zahl mit Schweizer Tausendertrennzeichen formatieren.
+
+    Args:
+        zahl: ganze Zahl, z. B. 11666.
+
+    Returns:
+        Text wie "11'666".
+    """
+    return f"{zahl:,}".replace(",", "'")
+
+
+def wochentag(tag):
+    """Wochentag-Kürzel zu einem Datum bestimmen.
+
+    Args:
+        tag: Datum als Text "TT.MM.JJJJ".
+
+    Returns:
+        Kürzel wie "Mo".
+    """
+    return WOCHENTAGE[datetime.strptime(tag, "%d.%m.%Y").weekday()]
+
+
 def main():
-    """Daten laden, Funktionen 1-6 anwenden und Resultat ausgeben."""
+    """Daten laden, Funktionen 1-6 anwenden und Resultat gemäss Mockup ausgeben."""
     tage = lade_daten(DATEI)
     halte = berechne_verspaetungen(gefahrene_halte(alle_halte(tage)))
-    statistiken = statistik_pro_bahnhof(halte)
 
-    print("=" * 60)
-    print(f"SBB-Verspätungsanalyse {tage[0][0]} – {tage[-1][0]}")
-    print(f"Pünktlich = weniger als {PUENKTLICH_GRENZE_MIN} Minuten Verspätung")
-    print("=" * 60)
+    print("=" * BREITE)
+    print(f"   SBB Verspätungsanalyse  |  {tage[0][0]} - {tage[-1][0]}")
+    print("=" * BREITE)
 
-    print("\n1) Statistik pro Bahnhof")
-    print(f"{'Bahnhof':<12}{'Halte':>8}{'Ø Verspätung':>15}{'Pünktlich':>12}")
-    for bahnhof, anzahl, durchschnitt, quote in statistiken:
-        print(f"{bahnhof:<12}{anzahl:>8}{durchschnitt:>11.1f} min{quote:>11.1f}%")
+    print("\nPünktlichkeit pro Bahnhof (Ranking)")
+    print("-" * BREITE)
+    print(f"{'Rang':<6}{'Bahnhof':<14}{'Halte':>7}{'Ø Verspätung':>15}{'Pünktlich':>11}")
+    rang = 1
+    for bahnhof, anzahl, durchschnitt, quote in ranking(statistik_pro_bahnhof(halte)):
+        print(f"{rang:>3}   {bahnhof:<14}{tausender(anzahl):>7}"
+              f"{durchschnitt:>11.1f} min{quote:>9.1f} %")
+        rang += 1
+    print(f"(pünktlich = weniger als {PUENKTLICH_GRENZE_MIN} Minuten Verspätung)")
 
-    print("\n2) Zugausfälle pro Tag")
-    total = 0
+    print(f"\nZugausfälle pro Tag (# = {AUSFAELLE_PRO_RAUTE} Ausfälle)")
+    print("-" * BREITE)
     for tag, anzahl in ausfaelle_pro_tag(tage):
-        print(f"{tag:<12}{anzahl:>5}")
-        total += anzahl
-    print(f"{'Total':<12}{total:>5}")
+        print(f"{wochentag(tag)} {tag[:6]}  {anzahl:>3}   {'#' * (anzahl // AUSFAELLE_PRO_RAUTE)}")
 
-    print("\n3) Grösste Verspätung pro Kategorie")
+    print("\nMaximale Verspätung pro Zugkategorie")
+    print("-" * BREITE)
     for kategorie, maximum, linie, bahnhof, tag in maxima_pro_kategorie(halte):
-        print(f"{kategorie:<4}{maximum:>6.1f} min  {linie:<6} {bahnhof:<12} {tag}")
-
-    print("\n4) Ranking Pünktlichkeit")
-    platz = 1
-    for bahnhof, _, durchschnitt, quote in ranking(statistiken):
-        print(f"{platz}. {bahnhof:<12}{quote:>6.1f}%  (Ø {durchschnitt:.1f} min)")
-        platz += 1
+        print(f"{kategorie:<4}{maximum:>3.0f} min   ({linie}, {bahnhof}, {tag[:6]})")
+    print("=" * BREITE)
 
 
 if __name__ == "__main__":
