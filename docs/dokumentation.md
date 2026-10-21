@@ -389,7 +389,13 @@ Ja. Für Datenauswertungen (Filtern, Umrechnen, Gruppieren, Zusammenfassen, Sort
 
 ### 4.5 Anwendungsfälle im Betrieb
 
-- Log-Dateien und Exporte auswerten: z. B. Fehler aus Server-Logs filtern, nach Datum gruppieren und zählen. Das ist genau das Muster Filter, Map, Reduce aus diesem Projekt.
+Elias (zvoove Switzerland AG): Bei der zvoove Switzerland AG verkaufen wir eine Hauptsoftware und dazu verschiedene Add-ons, und wenn Daten zwischen der Hauptsoftware und einem Add-on ausgetauscht werden, könnte man sie mit `filter` auf die relevanten Datensätze einschränken, mit `map` in das Format des Add-ons umwandeln und mit `reduce` zum Beispiel pro Kunde zusammenfassen, also genau das Muster Filter, Map, Reduce aus unserem Projekt.
+
+Aimen (Kanton Basel-Stadt): Der Kanton Basel-Stadt veröffentlicht viele Daten auf data.bs.ch, und solche Datensätze, zum Beispiel Verkehrszählungen oder Messwerte, könnte man genau wie die SBB-Daten mit kleinen, puren Funktionen filtern, umrechnen und pro Quartier oder Monat zusammenfassen, bevor sie in einem Bericht oder auf dem Portal erscheinen.
+
+Weitere allgemeine Anwendungsfälle:
+
+- Log-Dateien und Exporte auswerten: z. B. Fehler aus Server-Logs filtern, nach Datum gruppieren und zählen.
 - Datenbereinigung vor einem Import: CSV- oder Excel-Exporte aus Fachanwendungen mit kleinen, puren Funktionen prüfen und umwandeln, bevor sie in eine Datenbank geschrieben werden. Ungültige Zeilen filtern, Formate (Datum, Telefonnummern) mit `map` vereinheitlichen.
 - API-Antworten (JSON) umbauen: Listen von Objekten aus einer REST-API in die Struktur bringen, die das Frontend oder ein Bericht braucht (List- und Dict-Comprehensions).
 - Validierungsregeln: Regeln als kleine Funktionen schreiben und mit `all(regel(eingabe) for regel in regeln)` kombinieren; neue Regeln lassen sich hinzufügen, ohne bestehenden Code zu ändern.
