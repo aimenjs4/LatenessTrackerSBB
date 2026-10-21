@@ -1,0 +1,35 @@
+============================================================
+SBB-Verspätungsanalyse 03.11.2025 – 09.11.2025
+Pünktlich = weniger als 3 Minuten Verspätung
+============================================================
+
+1) Statistik pro Bahnhof
+Bahnhof        Halte   Ø Verspätung   Pünktlich
+Basel SBB       2226        1.0 min       90.3%
+Bern            7008        0.7 min       95.9%
+Liestal         1329        1.1 min       90.9%
+Olten           4128        0.8 min       94.4%
+Zürich HB      11666        1.1 min       92.4%
+
+2) Zugausfälle pro Tag
+03.11.2025     69
+04.11.2025     39
+05.11.2025     35
+06.11.2025     47
+07.11.2025     46
+08.11.2025     67
+09.11.2025     71
+Total         374
+
+3) Grösste Verspätung pro Kategorie
+S     28.7 min  S12    Zürich HB    03.11.2025
+RE    17.0 min  RE24   Olten        04.11.2025
+IR    63.0 min  IR37   Zürich HB    03.11.2025
+IC    58.5 min  IC6    Olten        06.11.2025
+
+4) Ranking Pünktlichkeit
+1. Bern          95.9%  (Ø 0.7 min)
+2. Olten         94.4%  (Ø 0.8 min)
+3. Zürich HB     92.4%  (Ø 1.1 min)
+4. Liestal       90.9%  (Ø 1.1 min)
+5. Basel SBB     90.3%  (Ø 1.0 min)
