@@ -4,6 +4,7 @@ Autor:   Aimen Labidi, Elias Felder
 Version: 2.0
 """
 import importlib.util
+import os
 import subprocess
 import sys
 import unittest
@@ -21,9 +22,10 @@ def run(version):
     Returns:
         Konsolen-Output als String.
     """
+    # UTF-8 erzwingen, sonst schreibt Python unter Windows in die Pipe mit cp1252
     return subprocess.run([sys.executable, ROOT / version / "main.py"],
-                          capture_output=True, text=True, check=True,
-                          encoding="utf-8").stdout
+                          capture_output=True, text=True, check=True, encoding="utf-8",
+                          env={**os.environ, "PYTHONIOENCODING": "utf-8"}).stdout
 
 
 def lade_modul(version):
