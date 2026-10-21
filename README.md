@@ -15,9 +15,13 @@ Dokumentation: [docs/dokumentation.md](docs/dokumentation.md) (als PDF: `docs/do
 python v1/main.py                   # Version 1.0 (imperativ)
 python v2/main.py                   # Version 2.0 (funktional)
 python -m unittest discover tests   # prüft Funktionen und V1 == V2 == erwarteter Output
-python data/generate_data.py        # nur nötig, um data/ist_daten.csv neu zu erzeugen
-                                    # (Rohdaten von opentransportdata.swiss nach data/raw/)
 ```
+
+`data/ist_daten.csv` ist bereits erzeugt und liegt bei. V1 und V2 brauchen nur diese Datei.
+Sie wurde einmalig mit `python data/generate_data.py` aus den Tagesdateien der SBB-Ist-Daten
+(opentransportdata.swiss) erstellt. Die Tagesdateien sind sehr gross und deshalb nicht im
+Projekt. Wer den Datensatz neu erzeugen will, legt sie in einen neuen Ordner `data/raw/`.
+Ohne diesen Ordner bricht das Skript ab und lässt die bestehende CSV unverändert.
 
 ## Aufbau
 

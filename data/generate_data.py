@@ -38,11 +38,19 @@ def reduziere(pfad):
 
 
 def main():
-    """Alle Rohdateien aus data/raw/ reduzieren und als data/ist_daten.csv speichern."""
+    """Alle Rohdateien aus data/raw/ reduzieren und als data/ist_daten.csv speichern.
+
+    Ohne Rohdateien bricht das Skript ab, damit die bestehende CSV nicht
+    durch eine leere Datei ersetzt wird.
+    """
+    rohdateien = sorted(ROH_ORDNER.glob("*.csv"))
+    if not rohdateien:
+        print(f"Keine Rohdateien in {ROH_ORDNER} gefunden, {ZIEL.name} bleibt unverändert.")
+        return
     with open(ZIEL, "w", newline="", encoding="utf-8") as f:
         writer = csv.writer(f)
         writer.writerow(["betriebstag", "bahnhof", "linie", "kategorie", "soll", "ist", "ausfall"])
-        for pfad in sorted(ROH_ORDNER.glob("*.csv")):
+        for pfad in rohdateien:
             writer.writerows(reduziere(pfad))
 
 
